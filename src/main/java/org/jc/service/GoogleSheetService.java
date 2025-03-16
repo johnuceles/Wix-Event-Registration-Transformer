@@ -36,7 +36,7 @@ public class GoogleSheetService {
     private static final String APPLICATION_NAME = "Google Sheets API Demo";
     private static final String SPREADSHEET_ID = "1Kw-GEb3SSuESFq0GRC3S9KPYRD4a08qtsMe3eePjltI";
     private static final String SHEET_NAME = "Sheet1";
-    private static final String JSON_CREDENTIALS_FILE = "src/main/resources/dark-balancer-453704-d9-0262e680ed5e.json";
+    private static final String JSON_CREDENTIALS_FILE = "src/main/resources/dark-balancer-453704-d9-656bec875b8e.json";
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
