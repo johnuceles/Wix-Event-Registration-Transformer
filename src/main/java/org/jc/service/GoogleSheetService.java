@@ -15,6 +15,7 @@ import org.jc.model.Item;
 import org.jc.model.RegistrationData;
 import org.jc.model.Ticket;
 import org.jc.model.google.sheet.Row;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -33,10 +34,13 @@ import static org.jc.util.GoogleSheetUtil.convertToList;
 @Slf4j
 public class GoogleSheetService {
 
+    @Value("${json.credentials.file}")
+    private String jsonCredentialsFile;
+
+
     private static final String APPLICATION_NAME = "Google Sheets API Demo";
     private static final String SPREADSHEET_ID = "1Kw-GEb3SSuESFq0GRC3S9KPYRD4a08qtsMe3eePjltI";
     private static final String SHEET_NAME = "Sheet1";
-    private static final String JSON_CREDENTIALS_FILE = "src/main/resources/dark-balancer-453704-d9-656bec875b8e.json";
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
@@ -66,7 +70,8 @@ public class GoogleSheetService {
 
     private Sheets getSheets() throws IOException, GeneralSecurityException {
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        Credential credential = GoogleCredential.fromStream(new FileInputStream(JSON_CREDENTIALS_FILE))
+        log.info("jsonCredentialsFile location: {}", jsonCredentialsFile);
+        Credential credential = GoogleCredential.fromStream(new FileInputStream(jsonCredentialsFile))
                 .createScoped(Collections.singleton(SheetsScopes.SPREADSHEETS));
         return new Sheets.Builder(httpTransport, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
