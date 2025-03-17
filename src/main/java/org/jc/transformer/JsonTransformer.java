@@ -28,11 +28,11 @@ public class JsonTransformer {
         row.setWixServiceFee(getWixServiceFee(item));
         row.setCoupon(getCoupon(item));
         row.setTax(getTax(item));
-        row.setTotalTicketPrice(getTotalTicketPrice(item));
         row.setTicketType(item.getName());
 
         row.setTicketNumber(ticket.getTicketNumber());
         row.setCheckedIn(ticket.getCheckIn());
+        row.setTotalTicketPrice(getTotalTicketPrice(ticket));
 
         List<InputValue> formInputValues = ticket.getForm().getInputValues();
         getValue(formInputValues, "firstName").map(InputValue::getValue).ifPresent(row::setFirstName);
@@ -46,9 +46,9 @@ public class JsonTransformer {
         return  row;
     }
 
-    private static String getTotalTicketPrice(Item item) {
-        if (nonNull(item.getTotal())) {
-            return item.getTotal().getAmount();
+    private static String getTotalTicketPrice(Ticket ticket) {
+        if (nonNull(ticket.getPrice())) {
+            return ticket.getPrice().getAmount();
         }
         return null;
     }

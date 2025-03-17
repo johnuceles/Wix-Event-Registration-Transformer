@@ -10,10 +10,9 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.extern.slf4j.Slf4j;
-import org.jc.model.InputValue;
+import org.jc.model.Invoice;
 import org.jc.model.Item;
 import org.jc.model.RegistrationData;
-import org.jc.model.Ticket;
 import org.jc.model.google.sheet.Row;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,8 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -50,10 +47,13 @@ public class GoogleSheetService {
 
 
     public String appendData(@RequestBody RegistrationData registrationData) {
-        if(nonNull(registrationData) && nonNull(registrationData.getInvoice()) && isNotEmpty(registrationData.getInvoice().getItems())) {
-            registrationData.getInvoice().getItems().forEach(item -> {
-                Optional<Ticket> optionalTicket = getTicket(registrationData.getTickets(), item.getId());
-                optionalTicket.ifPresent(ticket -> {
+        if(nonNull(registrationData) &&
+                isNotEmpty(registrationData.getTickets()) &&
+                nonNull(registrationData.getInvoice()) &&
+                isNotEmpty(registrationData.getInvoice().getItems())) {
+            registrationData.getTickets().forEach(ticket -> {
+                Optional<Item> optionalItem = getInvoice(registrationData.getInvoice(), ticket.getTicketDefinitionId());
+                optionalItem.ifPresent(item -> {
                     Row row = createRow(registrationData, ticket, item);
                     List<List<Object>> body = convertToList(row);
                     ValueRange input = new ValueRange().setValues(body);
@@ -72,9 +72,9 @@ public class GoogleSheetService {
         return "Filtered nested data appended successfully!";
     }
 
-    protected Optional<Ticket> getTicket(List<Ticket> tickets, String itemId) {
-        return tickets.stream()
-                .filter(ticket1 -> ticket1.getTicketDefinitionId().equals(itemId))
+    protected Optional<Item> getInvoice(Invoice invoice, String ticketDefinitionId) {
+        return invoice.getItems().stream()
+                .filter(item -> item.getId().equalsIgnoreCase(ticketDefinitionId))
                 .findFirst();
     }
 
