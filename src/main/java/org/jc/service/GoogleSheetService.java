@@ -20,16 +20,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.jc.transformer.JsonTransformer.createRow;
 import static org.jc.util.GoogleSheetUtil.convertToList;
 
 @Service
@@ -70,6 +72,12 @@ public class GoogleSheetService {
         return "Filtered nested data appended successfully!";
     }
 
+    protected Optional<Ticket> getTicket(List<Ticket> tickets, String itemId) {
+        return tickets.stream()
+                .filter(ticket1 -> ticket1.getTicketDefinitionId().equals(itemId))
+                .findFirst();
+    }
+
     private Sheets getSheets() throws IOException, GeneralSecurityException {
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         InputStream inputStream = new ByteArrayInputStream(privateKeyJson.getBytes());
@@ -78,96 +86,5 @@ public class GoogleSheetService {
         return new Sheets.Builder(httpTransport, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-    }
-
-    protected Optional<Ticket> getTicket(List<Ticket> tickets, String itemId) {
-        return tickets.stream()
-                .filter(ticket1 -> ticket1.getTicketDefinitionId().equals(itemId))
-                .findFirst();
-    }
-
-    protected Row createRow(RegistrationData registrationData, Ticket ticket, Item item) {
-        Row row = new Row();
-
-        row.setTicketRevenue(getRevenue(registrationData));
-        row.setPaymentStatus(registrationData.getStatus());
-        row.setOrderNumber(registrationData.getOrderNumber());
-        row.setOrderDate(registrationData.getCreated());
-
-        row.setTicketPrice(getPrice(item));
-        row.setWixServiceFee(getWixServiceFee(item));
-        row.setCoupon(getCoupon(item));
-        row.setTax(getTax(item));
-        row.setTotalTicketPrice(getTotalTicketPrice(item));
-        row.setTicketType(item.getName());
-
-        row.setTicketNumber(ticket.getTicketNumber());
-        row.setCheckedIn(ticket.getCheckIn());
-
-        List<InputValue> formInputValues = ticket.getForm().getInputValues();
-        getValue(formInputValues, "firstName").map(InputValue::getValue).ifPresent(row::setFirstName);
-        getValue(formInputValues, "lastName").map(InputValue::getValue).ifPresent(row::setLastName);
-        getValue(formInputValues, "email").map(InputValue::getValue).ifPresent(row::setEmail);
-        getValue(formInputValues, "phone").map(InputValue::getValue).ifPresent(row::setPhoneNumber);
-        getValue(formInputValues, "comment").map(InputValue::getValue).ifPresent(row::setComments);
-        getValue(formInputValues, "custom-75d7b78ce8c01d6a").map(InputValue::getValue).ifPresent(row::setParish);
-        getValue(formInputValues, "custom-b6e48abf549d32bc").map(InputValue::getValue).ifPresent(row::setAttendTheSessionIn);
-
-        return  row;
-    }
-
-    private String getTotalTicketPrice(Item item) {
-        if (nonNull(item.getTotal())) {
-            return item.getTotal().getAmount();
-        }
-        return null;
-    }
-
-    private String getTax(Item item) {
-        if(nonNull(item.getTax())) {
-            return item.getTax().getAmount();
-        }
-        return null;
-    }
-
-    private String getPrice(Item item) {
-        if (nonNull(item.getPrice())) {
-            return item.getPrice().getAmount();
-        }
-        return null;
-    }
-
-    private String getRevenue(RegistrationData registrationData) {
-        if(nonNull(registrationData.getInvoice().getRevenue())) {
-            return registrationData.getInvoice().getRevenue().getAmount();
-        }
-        return null;
-    }
-
-    private String getWixServiceFee(Item item) {
-        if (isNotEmpty(item.getFees())) {
-            return item.getFees().stream()
-                    .filter(fee -> "WIX_FEE".equalsIgnoreCase(fee.getName()))
-                    .findFirst()
-                    .map(fee -> fee.getAmount().getAmount())
-                    .orElse(null);
-        }
-        return null;
-    }
-
-    private String getCoupon(Item item) {
-        if(nonNull(item.getDiscount()) &&
-                isNotEmpty(item.getDiscount().getDiscounts()) &&
-                item.getDiscount().getDiscounts().stream().findFirst().isPresent() &&
-                nonNull(item.getDiscount().getDiscounts().stream().findFirst().get().getCoupon())) {
-            return item.getDiscount().getDiscounts().stream().findFirst().get().getCoupon().getCode();
-        }
-        return null;
-    }
-
-    private Optional<InputValue> getValue(List<InputValue> inputValues, String inputName) {
-        return inputValues.stream()
-                .filter(inputValue -> inputValue.getInputName().equals(inputName))
-                .findFirst();
     }
 }

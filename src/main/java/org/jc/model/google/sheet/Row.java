@@ -2,11 +2,13 @@ package org.jc.model.google.sheet;
 
 import lombok.Data;
 
+import java.time.ZonedDateTime;
+
 @Data
 public class Row {
 
     String orderNumber;
-    String orderDate;
+    String orderDateTime;
     String firstName;
     String lastName;
     String email;
