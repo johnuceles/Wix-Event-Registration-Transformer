@@ -1,9 +1,6 @@
 package org.jc.transformer;
 
-import org.jc.model.InputValue;
-import org.jc.model.Item;
-import org.jc.model.RegistrationData;
-import org.jc.model.Ticket;
+import org.jc.model.*;
 import org.jc.model.google.sheet.Row;
 
 import java.time.ZoneId;
@@ -79,7 +76,7 @@ public class JsonTransformer {
             return item.getFees().stream()
                     .filter(fee -> "WIX_FEE".equalsIgnoreCase(fee.getName()))
                     .findFirst()
-                    .map(fee -> fee.getAmount().getAmount())
+                    .map(Fee::getRate)
                     .orElse(null);
         }
         return null;
