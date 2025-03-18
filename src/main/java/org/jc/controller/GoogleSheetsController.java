@@ -21,6 +21,7 @@ public class GoogleSheetsController {
 
     @RequestMapping(value = "/append", method = RequestMethod.POST)
     public String appendData(@RequestBody RegistrationData registrationData) {
+        log.info("Registration data: {}", registrationData);
         return googleSheetService.appendData(registrationData);
     }
 }
