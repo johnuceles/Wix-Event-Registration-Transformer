@@ -2,6 +2,7 @@ package org.jc.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.jc.model.RegistrationData;
 import org.jc.service.GoogleSheetService;
@@ -29,6 +30,7 @@ public class GoogleSheetsController {
 
     private void logJSON(RegistrationData registrationData) {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         try {
             log.info("Registration data: {}", mapper.writeValueAsString(registrationData));
         } catch (JsonProcessingException e) {
