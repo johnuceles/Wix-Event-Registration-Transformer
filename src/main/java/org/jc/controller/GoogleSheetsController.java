@@ -1,5 +1,7 @@
 package org.jc.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.jc.model.RegistrationData;
 import org.jc.service.GoogleSheetService;
@@ -21,7 +23,16 @@ public class GoogleSheetsController {
 
     @RequestMapping(value = "/append", method = RequestMethod.POST)
     public String appendData(@RequestBody RegistrationData registrationData) {
-        log.info("Registration data: {}", registrationData);
+        logJSON(registrationData);
         return googleSheetService.appendData(registrationData);
+    }
+
+    private void logJSON(RegistrationData registrationData) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            log.info("Registration data: {}", mapper.writeValueAsString(registrationData));
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
     }
 }
