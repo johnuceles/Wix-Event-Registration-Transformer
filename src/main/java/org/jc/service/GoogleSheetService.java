@@ -64,6 +64,7 @@ public class GoogleSheetService {
                                 .setInsertDataOption("INSERT_ROWS")
                                 .execute();
                     } catch (IOException | GeneralSecurityException e) {
+                        log.error("Exception encountered while appending data to the sheet. Here is the registrationData: {}", registrationData);
                         throw new RuntimeException(e);
                     }
                 });
